@@ -28,6 +28,7 @@ app.use(express.static("public"));
 
 // Connect to the Mongo DB
 const mongoDB = process.env.MONGODB_URI || "mongodb://localhost/mongoHeadlines";
+mongoose.Promise = Promise;
 mongoose.connect(mongoDB)
 
 // Routes
@@ -108,16 +109,10 @@ app.post("/articles/:id", function(req, res) {
     })
 });
 
-
-console.log("db.articles: ", db.articles)
-console.log("db.Article: ", db.Article)
-
 app.get("/clear", function(req,res){
   db.Article.remove({}, (req.params.todoId, (err, todo) => {  
     // As always, handle any potential errors:
     if (err) return res.status(500).send(err);
-    // We'll create a simple object to send back with a message and the id of the document that was removed
-    // You can really do this however you want, though.
     const response = {
         message: "Articles successfully deleted",
     };
