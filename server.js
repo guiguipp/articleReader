@@ -55,8 +55,6 @@ rp(options)
             result.summary = $(this)
                 .children("p.obs-article-summary")
                 .text()
-            console.log("result.summary: ", result.summary)
-            console.log("result: ", result)
             // Create a new Article using the `result` object built from scraping
             db.Article.create(result)
                 .then(function(dbArticle) {
@@ -78,7 +76,6 @@ rp(options)
 
 // Route for getting all Articles from the db
 app.get("/articles", function(req, res) {
-  // TODO: Finish the route so it grabs all of the articles
   db.Article.find({})
     .then(function(dbArticle){
       res.json(dbArticle);
@@ -90,11 +87,6 @@ app.get("/articles", function(req, res) {
 
 // Route for grabbing a specific Article by id, populate it with it's note
 app.get("/articles/:id", function(req, res) {
-  // TODO
-  // ====
-  // Finish the route so it finds one article using the req.params.id,
-  // and run the populate method with "note",
-  // then responds with the article with the note included
   db.Article.findOne({_id: req.params.id})
     .populate("note")  
     .then(function(Article){
@@ -107,11 +99,6 @@ app.get("/articles/:id", function(req, res) {
 
 // Route for saving/updating an Article's associated Note
 app.post("/articles/:id", function(req, res) {
-  // TODO
-  // ====
-  // save the new note that gets posted to the Notes collection
-  // then find an article from the req.params.id
-  // and update it's "note" property with the _id of the new note
   db.Note.create(req.body)
     .then((createdNote) => {
       return db.Article.findByIdAndUpdate(req.params.id, { $set: { note: createdNote._id}}, { new: true });
@@ -120,6 +107,24 @@ app.post("/articles/:id", function(req, res) {
       res.send(updatedArticle)
     })
 });
+
+
+console.log("db.articles: ", db.articles)
+console.log("db.Article: ", db.Article)
+
+app.get("/clear", function(req,res){
+  db.Article.remove({}, (req.params.todoId, (err, todo) => {  
+    // As always, handle any potential errors:
+    if (err) return res.status(500).send(err);
+    // We'll create a simple object to send back with a message and the id of the document that was removed
+    // You can really do this however you want, though.
+    const response = {
+        message: "Articles successfully deleted",
+    };
+    return res.status(200).send(response);
+    })
+  );
+})
 
 // Start the server
 app.listen(PORT, function() {

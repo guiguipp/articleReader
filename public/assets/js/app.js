@@ -1,0 +1,112 @@
+$(document).ready(function(){
+console.log("sharpen the scraper")
+  const getArticle = () => {
+    $.getJSON("/articles", function(data) {
+      console.log(data[0])
+        data.forEach(e => {
+          let title = e.title;
+          let summary = e.summary;
+          let link = e.link;
+          let id = e._id;
+          let artDiv = `<div> <h3>${title}</h3><p>${summary}</p><a href="http://bibliobs.nouvelobs.com/${link}">Link</a> | <span class="create_note" data-id="${id}">Notes</div>`
+          // Display a div with all information scrapped
+          $("#articles").append(artDiv);
+        });
+    });
+  }
+
+  // Grab the articles as a json
+  $("#scrape").on("click", function() {
+    console.log("Scrape button clicked")
+    scrapeArticle()
+  })
+
+  // Grab the articles as a json
+  $("#clear").on("click", function() {
+    console.log("Clear button clicked")
+    clearArticles()
+  })
+  
+
+  // Whenever someone clicks a p tag
+  $(document).on("click", ".create_note", function() {
+    // Empty the notes from the note section
+    $("#notes").empty();
+    // Save the id from the p tag
+    let thisId = $(this).attr("data-id");
+    console.log("logging the id: ", thisId)
+
+    // Now make an ajax call for the Article
+    $.ajax({
+      method: "GET",
+      url: "/articles/" + thisId
+    })
+      // With that done, add the note information to the page
+      .then(function(data) {
+        console.log("this is the data grabbed from the call: ", data);
+        // The title of the article
+        $("#notes").append("<h2>" + data.title + "</h2>");
+        // An input to enter a new title
+        $("#notes").append("<input id='titleinput' name='title' >");
+        // A textarea to add a new note body
+        $("#notes").append("<textarea id='bodyinput' name='body'></textarea>");
+        // A button to submit a new note, with the id of the article saved to it
+        $("#notes").append("<button data-id='" + data._id + "' id='savenote'>Save Note</button>");
+
+        // If there's a note in the article
+        if (data.note) {
+          // Place the title of the note in the title input
+          $("#titleinput").val(data.note.title);
+          // Place the body of the note in the body textarea
+          $("#bodyinput").val(data.note.body);
+        }
+      });
+  });
+
+  // When you click the savenote button
+  $(document).on("click", "#savenote", function() {
+    // Grab the id associated with the article from the submit button
+    var thisId = $(this).attr("data-id");
+
+    // Run a POST request to change the note, using what's entered in the inputs
+    $.ajax({
+      method: "POST",
+      url: "/articles/" + thisId,
+      data: {
+        // Value taken from title input
+        title: $("#titleinput").val(),
+        // Value taken from note textarea
+        body: $("#bodyinput").val()
+      }
+    })
+      // With that done
+      .then(function(data) {
+        // Log the response
+        console.log(data);
+        // Empty the notes section
+        $("#notes").empty();
+      });
+
+    // Also, remove the values entered in the input and textarea for note entry
+    $("#titleinput").val("");
+    $("#bodyinput").val("");
+  });
+
+  const scrapeArticle = () => {
+    // This function handles the user clicking the "scrape new article" button
+    $.get("/scrape").then(function(data) {
+      // After scraping the site, the page is re-rendered
+      getArticle();
+    });
+  }
+
+  const clearArticles = () => {
+    // This function handles the user clicking the "scrape new article" button
+    $.get("/clear").then(function(data) {
+      // After scraping the site, the page is re-rendered
+      $("#articles").empty();
+    });
+    getArticle();
+  }
+getArticle()
+})
