@@ -1,19 +1,24 @@
 // Grab the articles as a json
 $.getJSON("/articles", function(data) {
-  // For each one
-  for (var i = 0; i < data.length; i++) {
-    // Display the apropos information on the page
-    $("#articles").append("<p data-id='" + data[i]._id + "'>" + data[i].title + "<br />" + data[i].link + "</p>");
-  }
+  console.log(data[0])
+    data.forEach(e => {
+      let title = e.title;
+      let link = e.link;
+      let id = e._id;
+      let artDiv = `<div> <h3>${title}</h3><a href="http://bibliobs.nouvelobs.com/${link}">Link</a> | <span class="create_note" data-id="${id}">Notes</div>`
+      // Display a div with all information scrapped
+      $("#articles").append(artDiv);
+    });
 });
 
 
 // Whenever someone clicks a p tag
-$(document).on("click", "p", function() {
+$(document).on("click", ".create_note", function() {
   // Empty the notes from the note section
   $("#notes").empty();
   // Save the id from the p tag
-  var thisId = $(this).attr("data-id");
+  let thisId = $(this).attr("data-id");
+  console.log("logging the id: ", thisId)
 
   // Now make an ajax call for the Article
   $.ajax({
@@ -22,7 +27,7 @@ $(document).on("click", "p", function() {
   })
     // With that done, add the note information to the page
     .then(function(data) {
-      console.log(data);
+      console.log("this is the data grabbed from the call: ", data);
       // The title of the article
       $("#notes").append("<h2>" + data.title + "</h2>");
       // An input to enter a new title
